@@ -14,6 +14,7 @@ PluginComponent {
     property int longBreakDuration: pluginData.longBreakDuration || 15
     property bool autoStartBreaks: pluginData.autoStartBreaks ?? false
     property bool autoStartPomodoros: pluginData.autoStartPomodoros ?? false
+    property bool autoSetDND: pluginData.autoSetDND ?? false
 
     onWorkDurationChanged: {
         if (globalTimerState.value === "work" && globalTotalSeconds.value > 0) {
@@ -103,6 +104,9 @@ PluginComponent {
 
             Quickshell.execDetached(["sh", "-c", "notify-send 'Pomodoro Complete' 'Time for a " + (isLongBreak ? "long" : "short") + " break!' -u normal"])
 
+            if (root.autoSetDND) {
+              SessionData.setDoNotDisturb(false)
+            }
             if (isLongBreak) {
                 root.startLongBreak(root.autoStartBreaks)
             } else {
@@ -120,11 +124,18 @@ PluginComponent {
         globalRemainingSeconds.set(globalTotalSeconds.value)
         if (autoStart) {
             globalTimerOwnerId.set(root.instanceId)
+
+            if (root.autoSetDND) {
+                SessionData.setDoNotDisturb(true)
+            }
         }
         globalIsRunning.set(autoStart ?? false)
     }
 
     function startShortBreak(autoStart) {
+        if(globalTimerState.value === "work" && root.autoSetDND) {
+          SessionData.setDoNotDisturb(false)
+        }
         globalTimerState.set("shortBreak")
         globalTotalSeconds.set(root.shortBreakDuration * 60)
         globalRemainingSeconds.set(globalTotalSeconds.value)
@@ -135,6 +146,9 @@ PluginComponent {
     }
 
     function startLongBreak(autoStart) {
+        if(globalTimerState.value === "work" && root.autoSetDND) {
+          SessionData.setDoNotDisturb(false)
+        }
         globalTimerState.set("longBreak")
         globalTotalSeconds.set(root.longBreakDuration * 60)
         globalRemainingSeconds.set(globalTotalSeconds.value)
@@ -149,10 +163,16 @@ PluginComponent {
             globalTimerOwnerId.set(root.instanceId)
         }
         globalIsRunning.set(!globalIsRunning.value)
+        if (root.autoSetDND && globalTimerState.value === "work") {
+          SessionData.setDoNotDisturb(globalIsRunning.value)
+        }
     }
 
     function resetTimer() {
         globalIsRunning.set(false)
+        if (root.autoSetDND && globalTimerState.value === "work") {
+          SessionData.setDoNotDisturb(false)
+        }
         globalRemainingSeconds.set(globalTotalSeconds.value)
     }
 
