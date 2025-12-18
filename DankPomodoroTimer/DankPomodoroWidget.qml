@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -172,6 +173,35 @@ PluginComponent {
         return "coffee"
     }
 
+    IpcHandler {
+      function resetTimer(): string {
+        root.resetTimer()
+        return "POMDORO_TIME_RESET_SUCCESS"
+      }
+
+      function toggleTimer(): string {
+        root.toggleTimer()
+        return globalIsRunning.value ? "Timer is running" : "Timer is paused"
+      }
+
+      function startWork(): string {
+        root.startWork(true)
+        return "POMODORO_WORK_STARTED"
+      }
+
+      function startShortBreak(): string {
+        root.startShortBreak(true)
+        return "POMODORO_SHORT_BREAK_STARTED"
+      }
+
+      function startLongBreak(): string {
+        root.startLongBreak(true)
+        return "POMODORO_LONG_BREAK_STARTED"
+      }
+
+      target: "pomodoroTimer"
+    }
+
     Timer {
         id: initTimer
         interval: 100
@@ -179,7 +209,7 @@ PluginComponent {
         running: true
         onTriggered: {
             if (globalRemainingSeconds.value === 0 && globalTotalSeconds.value === 0) {
-                startWork(false)
+                root.startWork(false)
             }
         }
     }
