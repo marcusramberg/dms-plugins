@@ -1,0 +1,18 @@
+{
+    "id": "dankLauncherKeys",
+    "name": "Keybinds Search",
+    "description": "Search and browse keyboard shortcuts from your compositor and applications",
+    "version": "1.0.0",
+    "license": "MIT",
+    "author": "Avenge Media",
+    "icon": "keyboard",
+    "type": "launcher",
+    "trigger": "\\",
+    "firstParty": true,
+    "component": "./DankLauncherKeys.qml",
+    "settings": "./DankLauncherKeysSettings.qml",
+    "permissions": [
+        "settings_read",
+        "settings_write"
+    ]
+}
