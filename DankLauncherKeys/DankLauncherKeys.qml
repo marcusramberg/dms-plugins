@@ -35,6 +35,8 @@ QtObject {
             return ["hyprland"];
         if (CompositorService.isSway)
             return ["sway"];
+        if (CompositorService.isDwl)
+            return ["mangowc"];
         return ["niri"];
     }
 
