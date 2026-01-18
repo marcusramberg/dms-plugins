@@ -177,24 +177,41 @@ PluginComponent {
         Row {
             spacing: (root.barConfig?.noBackground ?? false) ? 1 : 2
 
-            DankIcon {
-                name: root.hasDevice && root.selectedDevice.isReachable ? "phonelink" : "phonelink_off"
-                size: Theme.barIconSize(root.barThickness, -4)
-                color: {
-                    if (!KDEConnectService.available)
-                        return Theme.widgetIconColor;
-                    if (root.hasDevice && root.selectedDevice.isReachable)
-                        return Theme.primary;
-                    return Theme.widgetIconColor;
-                }
+            Item {
+                width: phoneIcon.width
+                height: phoneIcon.height
                 anchors.verticalCenter: parent.verticalCenter
+
+                DankIcon {
+                    id: phoneIcon
+                    name: root.hasDevice && root.selectedDevice.isReachable ? "smartphone" : "phonelink_off"
+                    size: Theme.barIconSize(root.barThickness, -4)
+                    color: {
+                        if (!KDEConnectService.available)
+                            return Theme.widgetIconColor;
+                        if (root.hasDevice && root.selectedDevice?.batteryCharging)
+                            return Theme.primary;
+                        return Theme.widgetIconColor;
+                    }
+                }
+
+                DankIcon {
+                    visible: root.hasDevice && (root.selectedDevice?.batteryCharging ?? false)
+                    name: "bolt"
+                    size: phoneIcon.size * 0.45
+                    color: Theme.primary
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.rightMargin: -2
+                    anchors.bottomMargin: -1
+                }
             }
 
             StyledText {
-                visible: root.hasDevice && root.selectedDevice.batteryCharge >= 0
-                text: root.selectedDevice?.batteryCharge + "%"
+                visible: root.hasDevice && (root.selectedDevice?.batteryCharge ?? -1) >= 0
+                text: (root.selectedDevice?.batteryCharge ?? 0) + "%"
                 font.pixelSize: Theme.barTextSize(root.barThickness, root.barConfig?.fontScale)
-                color: root.selectedDevice?.batteryCharging ? Theme.primary : Theme.widgetTextColor
+                color: Theme.widgetTextColor
                 anchors.verticalCenter: parent.verticalCenter
             }
 
@@ -212,24 +229,41 @@ PluginComponent {
         Column {
             spacing: 1
 
-            DankIcon {
-                name: root.hasDevice && root.selectedDevice.isReachable ? "phonelink" : "phonelink_off"
-                size: Theme.barIconSize(root.barThickness)
-                color: {
-                    if (!KDEConnectService.available)
-                        return Theme.widgetIconColor;
-                    if (root.hasDevice && root.selectedDevice.isReachable)
-                        return Theme.primary;
-                    return Theme.widgetIconColor;
-                }
+            Item {
+                width: phoneIconV.width
+                height: phoneIconV.height
                 anchors.horizontalCenter: parent.horizontalCenter
+
+                DankIcon {
+                    id: phoneIconV
+                    name: root.hasDevice && root.selectedDevice.isReachable ? "smartphone" : "phonelink_off"
+                    size: Theme.barIconSize(root.barThickness)
+                    color: {
+                        if (!KDEConnectService.available)
+                            return Theme.widgetIconColor;
+                        if (root.hasDevice && root.selectedDevice?.batteryCharging)
+                            return Theme.primary;
+                        return Theme.widgetIconColor;
+                    }
+                }
+
+                DankIcon {
+                    visible: root.hasDevice && (root.selectedDevice?.batteryCharging ?? false)
+                    name: "bolt"
+                    size: phoneIconV.size * 0.45
+                    color: Theme.primary
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.rightMargin: -2
+                    anchors.bottomMargin: -1
+                }
             }
 
             StyledText {
-                visible: root.hasDevice && root.selectedDevice.batteryCharge >= 0
-                text: root.selectedDevice?.batteryCharge.toString()
+                visible: root.hasDevice && (root.selectedDevice?.batteryCharge ?? -1) >= 0
+                text: (root.selectedDevice?.batteryCharge ?? 0).toString()
                 font.pixelSize: Theme.barTextSize(root.barThickness, root.barConfig?.fontScale)
-                color: root.selectedDevice?.batteryCharging ? Theme.primary : Theme.widgetTextColor
+                color: Theme.widgetTextColor
                 anchors.horizontalCenter: parent.horizontalCenter
             }
         }
