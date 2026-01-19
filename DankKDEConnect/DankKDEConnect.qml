@@ -189,14 +189,14 @@ PluginComponent {
                     color: {
                         if (!KDEConnectService.available)
                             return Theme.widgetIconColor;
-                        if (root.hasDevice && root.selectedDevice?.batteryCharging)
+                        if (root.hasDevice && root.selectedDevice?.isReachable && root.selectedDevice?.batteryCharging)
                             return Theme.primary;
                         return Theme.widgetIconColor;
                     }
                 }
 
                 DankIcon {
-                    visible: root.hasDevice && (root.selectedDevice?.batteryCharging ?? false)
+                    visible: root.hasDevice && root.selectedDevice?.isReachable && (root.selectedDevice?.batteryCharging ?? false)
                     name: "bolt"
                     size: phoneIcon.size * 0.45
                     color: Theme.primary
@@ -208,7 +208,7 @@ PluginComponent {
             }
 
             StyledText {
-                visible: root.hasDevice && (root.selectedDevice?.batteryCharge ?? -1) >= 0
+                visible: root.hasDevice && root.selectedDevice?.isReachable && (root.selectedDevice?.batteryCharge ?? -1) >= 0
                 text: (root.selectedDevice?.batteryCharge ?? 0) + "%"
                 font.pixelSize: Theme.barTextSize(root.barThickness, root.barConfig?.fontScale)
                 color: Theme.widgetTextColor
@@ -241,14 +241,14 @@ PluginComponent {
                     color: {
                         if (!KDEConnectService.available)
                             return Theme.widgetIconColor;
-                        if (root.hasDevice && root.selectedDevice?.batteryCharging)
+                        if (root.hasDevice && root.selectedDevice?.isReachable && root.selectedDevice?.batteryCharging)
                             return Theme.primary;
                         return Theme.widgetIconColor;
                     }
                 }
 
                 DankIcon {
-                    visible: root.hasDevice && (root.selectedDevice?.batteryCharging ?? false)
+                    visible: root.hasDevice && root.selectedDevice?.isReachable && (root.selectedDevice?.batteryCharging ?? false)
                     name: "bolt"
                     size: phoneIconV.size * 0.45
                     color: Theme.primary
@@ -260,7 +260,7 @@ PluginComponent {
             }
 
             StyledText {
-                visible: root.hasDevice && (root.selectedDevice?.batteryCharge ?? -1) >= 0
+                visible: root.hasDevice && root.selectedDevice?.isReachable && (root.selectedDevice?.batteryCharge ?? -1) >= 0
                 text: (root.selectedDevice?.batteryCharge ?? 0).toString()
                 font.pixelSize: Theme.barTextSize(root.barThickness, root.barConfig?.fontScale)
                 color: Theme.widgetTextColor
@@ -320,6 +320,7 @@ PluginComponent {
                     visible: root.showShareDialog
                     width: parent.width
                     deviceId: root.shareDeviceId
+                    parentPopout: popout.parentPopout
                     onClose: root.showShareDialog = false
                     onShare: (content, isUrl) => {
                         if (isUrl) {
@@ -339,6 +340,18 @@ PluginComponent {
                                 ToastService.showInfo(I18n.tr("Shared", "KDE Connect share success"));
                             });
                         }
+                        root.showShareDialog = false;
+                    }
+                    onShareFile: path => {
+                        const fileUrl = "file://" + path;
+                        KDEConnectService.shareUrl(root.shareDeviceId, fileUrl, response => {
+                            if (response.error) {
+                                ToastService.showError(I18n.tr("Failed to send file", "KDE Connect error"), response.error);
+                                return;
+                            }
+                            const filename = path.split("/").pop();
+                            ToastService.showInfo(I18n.tr("Sending", "KDE Connect file send") + " " + filename + "...");
+                        });
                         root.showShareDialog = false;
                     }
                 }
