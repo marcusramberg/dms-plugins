@@ -390,48 +390,50 @@ PluginComponent {
                                         width: parent.width
                                         spacing: 4
 
-                                        Row {
+                                        Item {
                                             width: parent.width
-                                            spacing: Theme.spacingS
+                                            height: displayNameRow.implicitHeight
 
-                                            DankIcon {
-                                                name: ClightService.getBacklightTypeIcon(modelData)
-                                                size: 18
-                                                color: Theme.primary
-                                                anchors.verticalCenter: parent.verticalCenter
-                                            }
+                                            Row {
+                                                id: displayNameRow
+                                                anchors.left: parent.left
+                                                anchors.right: displayPercentText.left
+                                                anchors.rightMargin: Theme.spacingS
+                                                spacing: Theme.spacingS
 
-                                            Column {
-                                                spacing: 0
-                                                anchors.verticalCenter: parent.verticalCenter
-
-                                                StyledText {
-                                                    text: modelData.name
-                                                    font.pixelSize: Theme.fontSizeSmall
-                                                    font.weight: Font.Medium
-                                                    color: Theme.surfaceText
+                                                DankIcon {
+                                                    name: ClightService.getBacklightTypeIcon(modelData)
+                                                    size: 18
+                                                    color: Theme.primary
+                                                    anchors.verticalCenter: parent.verticalCenter
                                                 }
 
-                                                StyledText {
-                                                    text: {
-                                                        let type = modelData.ddc ? "DDC" : (modelData.internal ? "Internal" : "External");
-                                                        return type;
+                                                Column {
+                                                    spacing: 0
+                                                    anchors.verticalCenter: parent.verticalCenter
+
+                                                    StyledText {
+                                                        text: modelData.name
+                                                        font.pixelSize: Theme.fontSizeSmall
+                                                        font.weight: Font.Medium
+                                                        color: Theme.surfaceText
                                                     }
-                                                    font.pixelSize: 10
-                                                    color: Theme.surfaceVariantText
-                                                }
-                                            }
 
-                                            Item {
-                                                width: parent.width - 200
-                                                height: 1
+                                                    StyledText {
+                                                        text: modelData.ddc ? "DDC" : (modelData.internal ? "Internal" : "External")
+                                                        font.pixelSize: 10
+                                                        color: Theme.surfaceVariantText
+                                                    }
+                                                }
                                             }
 
                                             StyledText {
+                                                id: displayPercentText
                                                 text: modelData.percent + "%"
                                                 font.pixelSize: Theme.fontSizeLarge
                                                 font.weight: Font.Bold
                                                 color: Theme.primary
+                                                anchors.right: parent.right
                                                 anchors.verticalCenter: parent.verticalCenter
                                             }
                                         }

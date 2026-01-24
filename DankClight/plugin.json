@@ -2,7 +2,7 @@
     "id": "dankClight",
     "name": "Clight",
     "description": "Ambient light sensor control - automatic brightness and screen dimming",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "license": "MIT",
     "author": "Avenge Media",
     "icon": "brightness_auto",
