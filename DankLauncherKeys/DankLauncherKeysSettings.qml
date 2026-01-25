@@ -11,6 +11,7 @@ PluginSettings {
 
     property var availableProviders: []
     property var selectedProviders: []
+    property bool _initialized: false
 
     Component.onCompleted: {
         loadAvailableProviders();
@@ -21,6 +22,9 @@ PluginSettings {
             selectedProviders = loadValue("providers", []);
             if (selectedProviders.length === 0)
                 selectedProviders = detectDefaultProviders();
+            Qt.callLater(() => {
+                _initialized = true;
+            });
         }
     }
 
@@ -103,6 +107,8 @@ PluginSettings {
                 description: value ? I18n.tr("Keybinds shown alongside regular search results") : I18n.tr("Use trigger prefix to activate")
                 defaultValue: false
                 onValueChanged: {
+                    if (!isInitialized)
+                        return;
                     if (value)
                         root.saveValue("trigger", "");
                     else
@@ -160,6 +166,8 @@ PluginSettings {
                 minButtonWidth: 48
                 textSize: Theme.fontSizeSmall
                 onSelectionChanged: {
+                    if (!root._initialized)
+                        return;
                     root.selectedProviders = currentSelection;
                     root.saveValue("providers", currentSelection);
                 }

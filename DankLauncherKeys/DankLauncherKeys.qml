@@ -174,8 +174,9 @@ QtObject {
     }
 
     onTriggerChanged: {
-        if (pluginService)
-            pluginService.savePluginData("dankLauncherKeys", "trigger", trigger);
+        if (!pluginService)
+            return;
+        pluginService.savePluginData("dankLauncherKeys", "trigger", trigger);
     }
 
     property Component processComponent: Component {
