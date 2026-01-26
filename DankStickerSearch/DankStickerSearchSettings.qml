@@ -37,4 +37,11 @@ PluginSettings {
         placeholder: ":s"
         defaultValue: ":s"
     }
+
+    ToggleSetting {
+        settingKey: "pasteUrlOnly"
+        label: "Paste URL Only"
+        description: "When enabled, Shift+Enter pastes the image URL instead of downloading the content"
+        defaultValue: false
+    }
 }

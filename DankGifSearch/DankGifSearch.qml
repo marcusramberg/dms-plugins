@@ -9,6 +9,7 @@ QtObject {
     property var pluginService: null
     property string pluginId: "dankGifSearch"
     property string trigger: "gif"
+    property bool pasteUrlOnly: false
     property string lastSentQuery: "\x00"
     property string pendingQuery: "\x00"
 
@@ -45,12 +46,19 @@ QtObject {
         if (!pluginService)
             return;
         trigger = pluginService.loadPluginData("dankGifSearch", "trigger", "gif");
+        pasteUrlOnly = pluginService.loadPluginData("dankGifSearch", "pasteUrlOnly", false);
     }
 
     onTriggerChanged: {
         if (!pluginService)
             return;
         pluginService.savePluginData("dankGifSearch", "trigger", trigger);
+    }
+
+    onPasteUrlOnlyChanged: {
+        if (!pluginService)
+            return;
+        pluginService.savePluginData("dankGifSearch", "pasteUrlOnly", pasteUrlOnly);
     }
 
     function getItems(query) {
@@ -130,6 +138,15 @@ QtObject {
     function getPasteText(item) {
         const urls = parseUrls(item);
         return getPreferredUrl(urls) || null;
+    }
+
+    function getPasteArgs(item) {
+        const url = getPasteText(item);
+        if (!url)
+            return null;
+        if (pasteUrlOnly)
+            return ["dms", "cl", "copy", url];
+        return ["dms", "cl", "copy", "--download", url];
     }
 
     function executeItem(item) {

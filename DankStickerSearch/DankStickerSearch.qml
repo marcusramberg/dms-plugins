@@ -9,6 +9,7 @@ QtObject {
     property var pluginService: null
     property string pluginId: "dankStickerSearch"
     property string trigger: ":s"
+    property bool pasteUrlOnly: false
     property string lastSentQuery: "\x00"
     property string lastSentCategory: ""
     property string pendingQuery: "\x00"
@@ -65,6 +66,7 @@ QtObject {
         if (!pluginService)
             return;
         trigger = pluginService.loadPluginData("dankStickerSearch", "trigger", ":s");
+        pasteUrlOnly = pluginService.loadPluginData("dankStickerSearch", "pasteUrlOnly", false);
         StickerSearchService.fetchCategories();
     }
 
@@ -72,6 +74,12 @@ QtObject {
         if (!pluginService)
             return;
         pluginService.savePluginData("dankStickerSearch", "trigger", trigger);
+    }
+
+    onPasteUrlOnlyChanged: {
+        if (!pluginService)
+            return;
+        pluginService.savePluginData("dankStickerSearch", "pasteUrlOnly", pasteUrlOnly);
     }
 
     function getCategories() {
@@ -187,6 +195,15 @@ QtObject {
     function getPasteText(item) {
         const urls = parseUrls(item);
         return getPreferredUrl(urls) || null;
+    }
+
+    function getPasteArgs(item) {
+        const url = getPasteText(item);
+        if (!url)
+            return null;
+        if (pasteUrlOnly)
+            return ["dms", "cl", "copy", url];
+        return ["dms", "cl", "copy", "--download", url];
     }
 
     function executeItem(item) {
