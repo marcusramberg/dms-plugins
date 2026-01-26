@@ -10,6 +10,7 @@ QtObject {
     property string pluginId: "dankGifSearch"
     property string trigger: "gif"
     property bool pasteUrlOnly: false
+    property string preferredFormat: "webp"
     property string lastSentQuery: "\x00"
     property string pendingQuery: "\x00"
 
@@ -47,6 +48,7 @@ QtObject {
             return;
         trigger = pluginService.loadPluginData("dankGifSearch", "trigger", "gif");
         pasteUrlOnly = pluginService.loadPluginData("dankGifSearch", "pasteUrlOnly", false);
+        preferredFormat = pluginService.loadPluginData("dankGifSearch", "preferredFormat", "webp");
     }
 
     onTriggerChanged: {
@@ -59,6 +61,12 @@ QtObject {
         if (!pluginService)
             return;
         pluginService.savePluginData("dankGifSearch", "pasteUrlOnly", pasteUrlOnly);
+    }
+
+    onPreferredFormatChanged: {
+        if (!pluginService)
+            return;
+        pluginService.savePluginData("dankGifSearch", "preferredFormat", preferredFormat);
     }
 
     function getItems(query) {
@@ -132,6 +140,12 @@ QtObject {
     function getPreferredUrl(urls) {
         if (!urls)
             return "";
+        if (preferredFormat === "gif" && urls.gif)
+            return urls.gif;
+        if (preferredFormat === "mp4" && urls.mp4)
+            return urls.mp4;
+        if (preferredFormat === "webp" && urls.webp)
+            return urls.webp;
         return urls.webp || urls.gif || urls.mp4 || "";
     }
 

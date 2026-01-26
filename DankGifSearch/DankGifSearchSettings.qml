@@ -44,4 +44,25 @@ PluginSettings {
         description: "When enabled, Shift+Enter pastes the image URL instead of downloading the content"
         defaultValue: false
     }
+
+    SelectionSetting {
+        settingKey: "preferredFormat"
+        label: "Preferred Format"
+        description: "Format to use for default copy and Shift+Enter paste"
+        options: [
+            {
+                label: "WebP",
+                value: "webp"
+            },
+            {
+                label: "GIF",
+                value: "gif"
+            },
+            {
+                label: "MP4",
+                value: "mp4"
+            }
+        ]
+        defaultValue: "webp"
+    }
 }

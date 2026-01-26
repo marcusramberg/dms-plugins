@@ -10,6 +10,7 @@ QtObject {
     property string pluginId: "dankStickerSearch"
     property string trigger: ":s"
     property bool pasteUrlOnly: false
+    property string preferredFormat: "webp"
     property string lastSentQuery: "\x00"
     property string lastSentCategory: ""
     property string pendingQuery: "\x00"
@@ -67,6 +68,7 @@ QtObject {
             return;
         trigger = pluginService.loadPluginData("dankStickerSearch", "trigger", ":s");
         pasteUrlOnly = pluginService.loadPluginData("dankStickerSearch", "pasteUrlOnly", false);
+        preferredFormat = pluginService.loadPluginData("dankStickerSearch", "preferredFormat", "webp");
         StickerSearchService.fetchCategories();
     }
 
@@ -80,6 +82,12 @@ QtObject {
         if (!pluginService)
             return;
         pluginService.savePluginData("dankStickerSearch", "pasteUrlOnly", pasteUrlOnly);
+    }
+
+    onPreferredFormatChanged: {
+        if (!pluginService)
+            return;
+        pluginService.savePluginData("dankStickerSearch", "preferredFormat", preferredFormat);
     }
 
     function getCategories() {
@@ -189,7 +197,11 @@ QtObject {
     function getPreferredUrl(urls) {
         if (!urls)
             return "";
-        return urls.webp || urls.gif || urls.mp4 || "";
+        if (preferredFormat === "gif" && urls.gif)
+            return urls.gif;
+        if (preferredFormat === "webp" && urls.webp)
+            return urls.webp;
+        return urls.webp || urls.gif || "";
     }
 
     function getPasteText(item) {
