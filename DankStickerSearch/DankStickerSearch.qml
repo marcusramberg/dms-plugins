@@ -236,6 +236,31 @@ QtObject {
             return [];
 
         const actions = [];
+        const preferredUrl = getPreferredUrl(urls);
+
+        if (SessionService.wtypeAvailable && preferredUrl) {
+            const copyCmd = pasteUrlOnly ? "dms cl copy '" + preferredUrl + "'" : "dms cl copy --download '" + preferredUrl + "'";
+            actions.push({
+                icon: "content_paste",
+                text: I18n.tr("Paste"),
+                closeLauncher: true,
+                action: () => {
+                    Quickshell.execDetached(["sh", "-c", copyCmd + " && sleep 0.3 && wtype -M ctrl -P v -p v -m ctrl"]);
+                }
+            });
+        }
+
+        if (preferredUrl) {
+            actions.push({
+                icon: "download",
+                text: I18n.tr("Copy Content"),
+                action: () => {
+                    Quickshell.execDetached(["dms", "cl", "copy", "--download", preferredUrl]);
+                    ToastService.showInfo(I18n.tr("Content copied"));
+                }
+            });
+        }
+
         if (urls.webp) {
             actions.push({
                 icon: "image",
@@ -267,7 +292,6 @@ QtObject {
             });
         }
 
-        const preferredUrl = getPreferredUrl(urls);
         if (preferredUrl) {
             actions.push({
                 icon: "open_in_new",
