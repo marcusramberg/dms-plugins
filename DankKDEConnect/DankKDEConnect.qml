@@ -5,6 +5,7 @@ import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
 import "./components"
+import "./services"
 
 PluginComponent {
     id: root
@@ -13,29 +14,30 @@ PluginComponent {
     property bool showShareDialog: false
     property string shareDeviceId: ""
 
-    readonly property var selectedDevice: selectedDeviceId ? KDEConnectService.devices[selectedDeviceId] ?? null : null
+    readonly property var selectedDevice: selectedDeviceId ? PhoneConnectService.devices[selectedDeviceId] ?? null : null
     readonly property bool hasDevice: selectedDevice !== null
+    readonly property string serviceName: PhoneConnectService.backendName
 
     ccWidgetIcon: {
-        if (!KDEConnectService.available)
+        if (!PhoneConnectService.available)
             return "phonelink_off";
         if (hasDevice && selectedDevice.isReachable)
             return "phonelink";
         return "phonelink_off";
     }
-    ccWidgetPrimaryText: "KDE Connect"
+    ccWidgetPrimaryText: serviceName
     ccWidgetSecondaryText: {
-        if (!KDEConnectService.available)
-            return I18n.tr("Unavailable", "KDE Connect unavailable status");
+        if (!PhoneConnectService.available)
+            return I18n.tr("Unavailable", "Phone Connect unavailable status");
         if (!hasDevice)
-            return I18n.tr("No devices", "KDE Connect no devices status");
+            return I18n.tr("No devices", "Phone Connect no devices status");
         if (selectedDevice.isReachable) {
             let text = selectedDevice.name;
             if (selectedDevice.batteryCharge >= 0)
                 text += " • " + selectedDevice.batteryCharge + "%";
             return text;
         }
-        return selectedDevice.name + " (" + I18n.tr("Offline", "KDE Connect offline status") + ")";
+        return selectedDevice.name + " (" + I18n.tr("Offline", "Phone Connect offline status") + ")";
     }
     ccWidgetIsActive: hasDevice && selectedDevice?.isReachable
 
@@ -54,63 +56,62 @@ PluginComponent {
     }
 
     Connections {
-        target: KDEConnectService
+        target: PhoneConnectService
         function onDevicesListChanged() {
-            if (!selectedDeviceId && KDEConnectService.deviceIds.length > 0) {
-                selectDevice(KDEConnectService.deviceIds[0]);
-            }
+            if (!selectedDeviceId && PhoneConnectService.deviceIds.length > 0)
+                selectDevice(PhoneConnectService.deviceIds[0]);
         }
 
         function onPairingRequestReceived(deviceId, verificationKey) {
-            const device = KDEConnectService.getDevice(deviceId);
-            ToastService.showInfo(I18n.tr("Pairing request from", "KDE Connect pairing request notification") + " " + (device?.name || deviceId), I18n.tr("Verification", "KDE Connect pairing verification key label") + ": " + verificationKey);
+            const device = PhoneConnectService.getDevice(deviceId);
+            const msg = verificationKey ? (I18n.tr("Verification", "Phone Connect pairing verification key label") + ": " + verificationKey) : "";
+            ToastService.showInfo(I18n.tr("Pairing request from", "Phone Connect pairing request notification") + " " + (device?.name || deviceId), msg);
         }
 
         function onShareReceived(deviceId, url) {
-            const device = KDEConnectService.getDevice(deviceId);
+            const device = PhoneConnectService.getDevice(deviceId);
             const filename = url.split("/").pop() || url;
             const filePath = url.startsWith("file://") ? url.substring(7) : url;
 
-            Quickshell.execDetached(["dms", "notify", "--app", "KDE Connect", "--icon", "smartphone", "--file", filePath, I18n.tr("File received from", "KDE Connect file share notification") + " " + (device?.name || deviceId), filename]);
+            Quickshell.execDetached(["dms", "notify", "--app", serviceName, "--icon", "smartphone", "--file", filePath, I18n.tr("File received from", "Phone Connect file share notification") + " " + (device?.name || deviceId), filename]);
         }
     }
 
     function selectDevice(deviceId) {
         selectedDeviceId = deviceId;
-        if (pluginService) {
+        if (pluginService)
             pluginService.savePluginData("dankKDEConnect", "selectedDeviceId", deviceId);
-        }
     }
 
     function handleAction(deviceId, action) {
-        const device = KDEConnectService.getDevice(deviceId);
+        const device = PhoneConnectService.getDevice(deviceId);
         const deviceName = device?.name || I18n.tr("device", "Generic device name fallback");
         switch (action) {
         case "ring":
-            KDEConnectService.ringDevice(deviceId, response => {
+            PhoneConnectService.ringDevice(deviceId, response => {
                 if (response.error) {
-                    ToastService.showError(I18n.tr("Failed to ring device", "KDE Connect error"), response.error);
+                    ToastService.showError(I18n.tr("Failed to ring device", "Phone Connect error"), response.error);
                     return;
                 }
-                ToastService.showInfo(I18n.tr("Ringing", "KDE Connect ring action") + " " + deviceName + "...");
+                ToastService.showInfo(I18n.tr("Ringing", "Phone Connect ring action") + " " + deviceName + "...");
             });
             break;
         case "ping":
-            KDEConnectService.sendPing(deviceId, "", response => {
+            PhoneConnectService.sendPing(deviceId, "", response => {
                 if (response.error) {
-                    ToastService.showError(I18n.tr("Failed to send ping", "KDE Connect error"), response.error);
+                    ToastService.showError(I18n.tr("Failed to send ping", "Phone Connect error"), response.error);
                     return;
                 }
-                ToastService.showInfo(I18n.tr("Ping sent to", "KDE Connect ping action") + " " + deviceName);
+                ToastService.showInfo(I18n.tr("Ping sent to", "Phone Connect ping action") + " " + deviceName);
             });
             break;
         case "clipboard":
-            KDEConnectService.sendClipboard(deviceId, response => {
+            PhoneConnectService.sendClipboard(deviceId, response => {
                 if (response.error) {
-                    ToastService.showError(I18n.tr("Failed to send clipboard", "KDE Connect error"), response.error);
+                    ToastService.showError(I18n.tr("Failed to send clipboard", "Phone Connect error"), response.error);
                     return;
                 }
-                ToastService.showInfo(I18n.tr("Clipboard sent", "KDE Connect clipboard action"));
+                ToastService.showInfo(I18n.tr("Clipboard sent", "Phone Connect clipboard action"));
             });
             break;
         case "share":
@@ -119,55 +120,55 @@ PluginComponent {
             break;
         case "sms":
             closePopout();
-            KDEConnectService.launchSmsApp(deviceId, response => {
+            PhoneConnectService.launchSmsApp(deviceId, response => {
                 if (response.error) {
-                    ToastService.showError(I18n.tr("Failed to launch SMS app", "KDE Connect error"), response.error);
+                    ToastService.showError(I18n.tr("Failed to launch SMS app", "Phone Connect error"), response.error);
                     return;
                 }
-                ToastService.showInfo(I18n.tr("Opening SMS app", "KDE Connect SMS action") + "...");
+                ToastService.showInfo(I18n.tr("Opening SMS app", "Phone Connect SMS action") + "...");
             });
             break;
         case "browse":
             closePopout();
-            KDEConnectService.startBrowsing(deviceId, response => {
+            PhoneConnectService.startBrowsing(deviceId, response => {
                 if (response.error) {
-                    ToastService.showError(I18n.tr("Failed to browse device", "KDE Connect error"), response.error);
+                    ToastService.showError(I18n.tr("Failed to browse device", "Phone Connect error"), response.error);
                     return;
                 }
-                ToastService.showInfo(I18n.tr("Opening file browser", "KDE Connect browse action") + "...");
+                ToastService.showInfo(I18n.tr("Opening file browser", "Phone Connect browse action") + "...");
             });
             break;
         case "pair":
-            KDEConnectService.requestPairing(deviceId, response => {
+            PhoneConnectService.requestPairing(deviceId, response => {
                 if (response.error) {
-                    ToastService.showError(I18n.tr("Pairing failed", "KDE Connect error"), response.error);
+                    ToastService.showError(I18n.tr("Pairing failed", "Phone Connect error"), response.error);
                     return;
                 }
-                ToastService.showInfo(I18n.tr("Pairing request sent", "KDE Connect pairing action"));
+                ToastService.showInfo(I18n.tr("Pairing request sent", "Phone Connect pairing action"));
             });
             break;
         case "acceptPair":
-            KDEConnectService.acceptPairing(deviceId, response => {
+            PhoneConnectService.acceptPairing(deviceId, response => {
                 if (response.error) {
-                    ToastService.showError(I18n.tr("Failed to accept pairing", "KDE Connect error"), response.error);
+                    ToastService.showError(I18n.tr("Failed to accept pairing", "Phone Connect error"), response.error);
                     return;
                 }
-                ToastService.showInfo(I18n.tr("Device paired", "KDE Connect pairing action"));
+                ToastService.showInfo(I18n.tr("Device paired", "Phone Connect pairing action"));
             });
             break;
         case "rejectPair":
-            KDEConnectService.cancelPairing(deviceId, response => {
+            PhoneConnectService.cancelPairing(deviceId, response => {
                 if (response.error)
-                    ToastService.showError(I18n.tr("Failed to reject pairing", "KDE Connect error"), response.error);
+                    ToastService.showError(I18n.tr("Failed to reject pairing", "Phone Connect error"), response.error);
             });
             break;
         case "unpair":
-            KDEConnectService.unpair(deviceId, response => {
+            PhoneConnectService.unpair(deviceId, response => {
                 if (response.error) {
-                    ToastService.showError(I18n.tr("Unpair failed", "KDE Connect error"), response.error);
+                    ToastService.showError(I18n.tr("Unpair failed", "Phone Connect error"), response.error);
                     return;
                 }
-                ToastService.showInfo(I18n.tr("Device unpaired", "KDE Connect unpair action"));
+                ToastService.showInfo(I18n.tr("Device unpaired", "Phone Connect unpair action"));
             });
             break;
         }
@@ -187,7 +188,7 @@ PluginComponent {
                     name: root.hasDevice && root.selectedDevice.isReachable ? "smartphone" : "phonelink_off"
                     size: Theme.barIconSize(root.barThickness, -4)
                     color: {
-                        if (!KDEConnectService.available)
+                        if (!PhoneConnectService.available)
                             return Theme.widgetIconColor;
                         if (root.hasDevice && root.selectedDevice?.isReachable && root.selectedDevice?.batteryCharging)
                             return Theme.primary;
@@ -216,7 +217,7 @@ PluginComponent {
             }
 
             StyledText {
-                visible: !KDEConnectService.available
+                visible: !PhoneConnectService.available
                 text: "N/A"
                 font.pixelSize: Theme.barTextSize(root.barThickness, root.barConfig?.fontScale)
                 color: Theme.widgetTextColor
@@ -239,7 +240,7 @@ PluginComponent {
                     name: root.hasDevice && root.selectedDevice.isReachable ? "smartphone" : "phonelink_off"
                     size: Theme.barIconSize(root.barThickness)
                     color: {
-                        if (!KDEConnectService.available)
+                        if (!PhoneConnectService.available)
                             return Theme.widgetIconColor;
                         if (root.hasDevice && root.selectedDevice?.isReachable && root.selectedDevice?.batteryCharging)
                             return Theme.primary;
@@ -273,18 +274,18 @@ PluginComponent {
         PopoutComponent {
             id: popout
 
-            headerText: "KDE Connect"
-            detailsText: KDEConnectService.connectedCount + " connected • " + KDEConnectService.pairedCount + " paired"
+            headerText: root.serviceName
+            detailsText: PhoneConnectService.connectedCount + " connected • " + PhoneConnectService.pairedCount + " paired"
             showCloseButton: true
             headerActions: Component {
                 DankActionButton {
-                    iconName: KDEConnectService.isRefreshing ? "sync" : "refresh"
+                    iconName: PhoneConnectService.isRefreshing ? "sync" : "refresh"
                     iconColor: Theme.surfaceVariantText
                     buttonSize: 28
-                    enabled: !KDEConnectService.isRefreshing
-                    tooltipText: I18n.tr("Refresh", "KDE Connect refresh tooltip")
+                    enabled: !PhoneConnectService.isRefreshing
+                    tooltipText: I18n.tr("Refresh", "Phone Connect refresh tooltip")
                     tooltipSide: "bottom"
-                    onClicked: KDEConnectService.refreshDevices()
+                    onClicked: PhoneConnectService.refreshDevices()
                 }
             }
 
@@ -293,23 +294,23 @@ PluginComponent {
                 spacing: Theme.spacingM
 
                 UnavailableMessage {
-                    visible: !KDEConnectService.available
+                    visible: !PhoneConnectService.available
                     width: parent.width
                 }
 
                 EmptyState {
-                    visible: KDEConnectService.available && KDEConnectService.deviceIds.length === 0
+                    visible: PhoneConnectService.available && PhoneConnectService.deviceIds.length === 0
                     width: parent.width
                 }
 
                 Repeater {
-                    model: KDEConnectService.deviceIds
+                    model: PhoneConnectService.deviceIds
 
                     DeviceCard {
                         required property string modelData
                         width: parent.width
                         deviceId: modelData
-                        device: KDEConnectService.getDevice(modelData)
+                        device: PhoneConnectService.getDevice(modelData)
                         isSelected: root.selectedDeviceId === modelData
                         onClicked: root.selectDevice(modelData)
                         onAction: action => root.handleAction(modelData, action)
@@ -324,33 +325,33 @@ PluginComponent {
                     onClose: root.showShareDialog = false
                     onShare: (content, isUrl) => {
                         if (isUrl) {
-                            KDEConnectService.shareUrl(root.shareDeviceId, content, response => {
+                            PhoneConnectService.shareUrl(root.shareDeviceId, content, response => {
                                 if (response.error) {
-                                    ToastService.showError(I18n.tr("Failed to share", "KDE Connect error"), response.error);
+                                    ToastService.showError(I18n.tr("Failed to share", "Phone Connect error"), response.error);
                                     return;
                                 }
-                                ToastService.showInfo(I18n.tr("Shared", "KDE Connect share success"));
+                                ToastService.showInfo(I18n.tr("Shared", "Phone Connect share success"));
                             });
                         } else {
-                            KDEConnectService.shareText(root.shareDeviceId, content, response => {
+                            PhoneConnectService.shareText(root.shareDeviceId, content, response => {
                                 if (response.error) {
-                                    ToastService.showError(I18n.tr("Failed to share", "KDE Connect error"), response.error);
+                                    ToastService.showError(I18n.tr("Failed to share", "Phone Connect error"), response.error);
                                     return;
                                 }
-                                ToastService.showInfo(I18n.tr("Shared", "KDE Connect share success"));
+                                ToastService.showInfo(I18n.tr("Shared", "Phone Connect share success"));
                             });
                         }
                         root.showShareDialog = false;
                     }
                     onShareFile: path => {
                         const fileUrl = "file://" + path;
-                        KDEConnectService.shareUrl(root.shareDeviceId, fileUrl, response => {
+                        PhoneConnectService.shareUrl(root.shareDeviceId, fileUrl, response => {
                             if (response.error) {
-                                ToastService.showError(I18n.tr("Failed to send file", "KDE Connect error"), response.error);
+                                ToastService.showError(I18n.tr("Failed to send file", "Phone Connect error"), response.error);
                                 return;
                             }
                             const filename = path.split("/").pop();
-                            ToastService.showInfo(I18n.tr("Sending", "KDE Connect file send") + " " + filename + "...");
+                            ToastService.showInfo(I18n.tr("Sending", "Phone Connect file send") + " " + filename + "...");
                         });
                         root.showShareDialog = false;
                     }

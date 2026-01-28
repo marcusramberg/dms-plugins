@@ -38,7 +38,7 @@ StyledRect {
             spacing: Theme.spacingM
 
             DankIcon {
-                name: KDEConnectService.getDeviceIcon(root.device)
+                name: PhoneConnectService.getDeviceIcon(root.device)
                 size: Theme.iconSize + 4
                 color: root.device?.isReachable ? Theme.primary : Theme.surfaceVariantText
                 anchors.verticalCenter: parent.verticalCenter
@@ -75,7 +75,7 @@ StyledRect {
                     spacing: 4
 
                     DankIcon {
-                        name: KDEConnectService.getBatteryIcon(root.device)
+                        name: PhoneConnectService.getBatteryIcon(root.device)
                         size: Theme.iconSize - 4
                         color: root.device?.batteryCharging ? Theme.success : Theme.surfaceVariantText
                         anchors.verticalCenter: parent.verticalCenter
@@ -90,8 +90,8 @@ StyledRect {
                 }
 
                 DankIcon {
-                    visible: KDEConnectService.getNetworkIcon(root.device) !== ""
-                    name: KDEConnectService.getNetworkIcon(root.device)
+                    visible: PhoneConnectService.getNetworkIcon(root.device) !== ""
+                    name: PhoneConnectService.getNetworkIcon(root.device)
                     size: Theme.iconSize - 4
                     color: Theme.surfaceVariantText
                     anchors.verticalCenter: parent.verticalCenter
@@ -149,6 +149,7 @@ StyledRect {
             }
 
             DankActionButton {
+                visible: PhoneConnectService.supportsSms
                 iconName: "sms"
                 iconColor: Theme.primary
                 buttonSize: 36

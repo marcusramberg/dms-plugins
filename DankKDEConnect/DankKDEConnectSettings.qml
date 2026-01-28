@@ -2,13 +2,16 @@ import QtQuick
 import qs.Common
 import qs.Widgets
 import qs.Modules.Plugins
+import "./services"
 
 PluginSettings {
     id: root
     pluginId: "dankKDEConnect"
 
+    readonly property string serviceName: PhoneConnectService.backendName
+
     StyledText {
-        text: "KDE Connect"
+        text: serviceName
         font.pixelSize: Theme.fontSizeLarge
         font.weight: Font.Bold
         color: Theme.surfaceText
@@ -39,26 +42,26 @@ PluginSettings {
         spacing: Theme.spacingS
 
         DankIcon {
-            name: KDEConnectService.available ? "check_circle" : "error"
+            name: PhoneConnectService.available ? "check_circle" : "error"
             size: Theme.iconSize
-            color: KDEConnectService.available ? Theme.success : Theme.error
+            color: PhoneConnectService.available ? Theme.success : Theme.error
             anchors.verticalCenter: parent.verticalCenter
         }
 
         StyledText {
-            text: KDEConnectService.available ? "KDE Connect daemon running" : "KDE Connect daemon not running"
+            text: PhoneConnectService.available ? (serviceName + " running") : "No backend running"
             font.pixelSize: Theme.fontSizeSmall
-            color: KDEConnectService.available ? Theme.success : Theme.error
+            color: PhoneConnectService.available ? Theme.success : Theme.error
             anchors.verticalCenter: parent.verticalCenter
         }
     }
 
     Row {
-        visible: KDEConnectService.available
+        visible: PhoneConnectService.available
         spacing: Theme.spacingS
 
         StyledText {
-            text: "Connected: " + KDEConnectService.connectedCount
+            text: "Connected: " + PhoneConnectService.connectedCount
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceVariantText
         }
@@ -70,25 +73,25 @@ PluginSettings {
         }
 
         StyledText {
-            text: "Paired: " + KDEConnectService.pairedCount
+            text: "Paired: " + PhoneConnectService.pairedCount
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceVariantText
         }
     }
 
     Column {
-        visible: KDEConnectService.available && KDEConnectService.selfId
+        visible: PhoneConnectService.available && PhoneConnectService.selfId
         width: parent.width
         spacing: 4
 
         StyledText {
-            text: "This device: " + KDEConnectService.announcedName
+            text: "This device: " + PhoneConnectService.announcedName
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceVariantText
         }
 
         StyledText {
-            text: "ID: " + KDEConnectService.selfId
+            text: "ID: " + PhoneConnectService.selfId
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceVariantText
             opacity: 0.7
@@ -102,7 +105,7 @@ PluginSettings {
     }
 
     StyledText {
-        visible: KDEConnectService.available && KDEConnectService.deviceIds.length > 0
+        visible: PhoneConnectService.available && PhoneConnectService.deviceIds.length > 0
         text: "Devices"
         font.pixelSize: Theme.fontSizeMedium
         font.weight: Font.DemiBold
@@ -110,11 +113,11 @@ PluginSettings {
     }
 
     Repeater {
-        model: KDEConnectService.deviceIds
+        model: PhoneConnectService.deviceIds
 
         StyledRect {
             required property string modelData
-            readonly property var device: KDEConnectService.getDevice(modelData)
+            readonly property var device: PhoneConnectService.getDevice(modelData)
 
             width: parent.width
             height: deviceRow.implicitHeight + Theme.spacingS * 2
@@ -129,7 +132,7 @@ PluginSettings {
                 spacing: Theme.spacingS
 
                 DankIcon {
-                    name: KDEConnectService.getDeviceIcon(device)
+                    name: PhoneConnectService.getDeviceIcon(device)
                     size: Theme.iconSize
                     color: device?.isReachable ? Theme.primary : Theme.surfaceVariantText
                     anchors.verticalCenter: parent.verticalCenter
@@ -162,7 +165,7 @@ PluginSettings {
                 spacing: 4
 
                 DankIcon {
-                    name: KDEConnectService.getBatteryIcon(device)
+                    name: PhoneConnectService.getBatteryIcon(device)
                     size: Theme.iconSize - 4
                     color: device?.batteryCharging ? Theme.success : Theme.surfaceVariantText
                 }
@@ -177,8 +180,8 @@ PluginSettings {
     }
 
     StyledText {
-        visible: KDEConnectService.available && KDEConnectService.deviceIds.length === 0
-        text: "No devices found. Make sure KDE Connect is running on your other devices."
+        visible: PhoneConnectService.available && PhoneConnectService.deviceIds.length === 0
+        text: "No devices found. Make sure KDE Connect or Valent is running on your other devices."
         font.pixelSize: Theme.fontSizeSmall
         color: Theme.surfaceVariantText
         width: parent.width
@@ -309,7 +312,7 @@ PluginSettings {
     }
 
     StyledText {
-        text: "• DMS daemon version 1.4 or higher\n• KDE Connect daemon (kdeconnectd)\n• KDE Connect app on your mobile device"
+        text: "• DMS daemon version 1.4 or higher\n• KDE Connect (kdeconnectd) or Valent\n• KDE Connect app on your mobile device"
         font.pixelSize: Theme.fontSizeSmall
         color: Theme.surfaceVariantText
         width: parent.width
@@ -317,9 +320,9 @@ PluginSettings {
     }
 
     DankButton {
-        visible: KDEConnectService.available
+        visible: PhoneConnectService.available
         text: "Refresh Devices"
         iconName: "refresh"
-        onClicked: KDEConnectService.refreshDevices()
+        onClicked: PhoneConnectService.refreshDevices()
     }
 }

@@ -15,7 +15,7 @@ Column {
     }
 
     StyledText {
-        text: I18n.tr("Make sure KDE Connect is running on your other devices", "KDE Connect hint message")
+        text: I18n.tr("Make sure KDE Connect or Valent is running on your other devices", "Phone Connect hint message")
         font.pixelSize: Theme.fontSizeSmall
         color: Theme.surfaceVariantText
         opacity: 0.7

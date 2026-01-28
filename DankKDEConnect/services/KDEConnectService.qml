@@ -27,6 +27,7 @@ Singleton {
 
     property bool available: false
     property bool initialized: false
+    readonly property bool supportsSms: true
     property var deviceIds: []
     property var devices: ({})
     property bool isRefreshing: false

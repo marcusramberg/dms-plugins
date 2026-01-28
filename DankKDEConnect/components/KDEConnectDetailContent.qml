@@ -27,7 +27,7 @@ Rectangle {
 
             StyledText {
                 text: {
-                    const count = KDEConnectService.connectedCount;
+                    const count = PhoneConnectService.connectedCount;
                     if (count === 0)
                         return I18n.tr("No devices connected", "KDE Connect status");
                     if (count === 1)
@@ -48,14 +48,14 @@ Rectangle {
                 color: refreshArea.containsMouse ? Theme.primaryHoverLight : Theme.surfaceLight
                 width: 80
                 Layout.alignment: Qt.AlignVCenter
-                opacity: KDEConnectService.isRefreshing ? 0.5 : 1.0
+                opacity: PhoneConnectService.isRefreshing ? 0.5 : 1.0
 
                 Row {
                     anchors.centerIn: parent
                     spacing: Theme.spacingXS
 
                     DankIcon {
-                        name: KDEConnectService.isRefreshing ? "sync" : "refresh"
+                        name: PhoneConnectService.isRefreshing ? "sync" : "refresh"
                         size: Theme.fontSizeSmall
                         color: Theme.primary
                     }
@@ -72,9 +72,9 @@ Rectangle {
                     id: refreshArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    cursorShape: KDEConnectService.isRefreshing ? Qt.BusyCursor : Qt.PointingHandCursor
-                    enabled: !KDEConnectService.isRefreshing
-                    onClicked: KDEConnectService.refreshDevices()
+                    cursorShape: PhoneConnectService.isRefreshing ? Qt.BusyCursor : Qt.PointingHandCursor
+                    enabled: !PhoneConnectService.isRefreshing
+                    onClicked: PhoneConnectService.refreshDevices()
                 }
             }
         }
@@ -92,7 +92,7 @@ Rectangle {
             Column {
                 anchors.centerIn: parent
                 spacing: Theme.spacingS
-                visible: !KDEConnectService.available
+                visible: !PhoneConnectService.available
 
                 DankIcon {
                     name: "phonelink_off"
@@ -102,14 +102,14 @@ Rectangle {
                 }
 
                 StyledText {
-                    text: I18n.tr("KDE Connect unavailable", "KDE Connect service unavailable message")
+                    text: I18n.tr("Phone Connect unavailable", "Phone Connect service unavailable message")
                     font.pixelSize: Theme.fontSizeMedium
                     color: Theme.surfaceVariantText
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
                 StyledText {
-                    text: I18n.tr("Start kdeconnectd to connect devices", "KDE Connect start daemon hint")
+                    text: I18n.tr("Start KDE Connect or Valent", "Phone Connect start daemon hint")
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -119,7 +119,7 @@ Rectangle {
             Column {
                 anchors.centerIn: parent
                 spacing: Theme.spacingS
-                visible: KDEConnectService.available && KDEConnectService.deviceIds.length === 0
+                visible: PhoneConnectService.available && PhoneConnectService.deviceIds.length === 0
 
                 DankIcon {
                     name: "devices"
@@ -146,17 +146,17 @@ Rectangle {
             DankListView {
                 id: deviceListView
                 anchors.fill: parent
-                visible: KDEConnectService.available && KDEConnectService.deviceIds.length > 0
+                visible: PhoneConnectService.available && PhoneConnectService.deviceIds.length > 0
                 spacing: 8
                 clip: true
 
-                model: KDEConnectService.deviceIds
+                model: PhoneConnectService.deviceIds
 
                 delegate: Rectangle {
                     id: deviceDelegate
                     required property string modelData
 
-                    property var device: KDEConnectService.getDevice(modelData)
+                    property var device: PhoneConnectService.getDevice(modelData)
                     property bool canControl: device?.isReachable && device?.isPaired
 
                     width: deviceListView.width
@@ -177,7 +177,7 @@ Rectangle {
                             spacing: Theme.spacingM
 
                             DankIcon {
-                                name: KDEConnectService.getDeviceIcon(device)
+                                name: PhoneConnectService.getDeviceIcon(device)
                                 size: Theme.iconSize + 4
                                 color: device?.isReachable ? Theme.primary : Theme.surfaceVariantText
                                 anchors.verticalCenter: parent.verticalCenter
@@ -242,7 +242,7 @@ Rectangle {
                                     spacing: 4
 
                                     DankIcon {
-                                        name: KDEConnectService.getBatteryIcon(device)
+                                        name: PhoneConnectService.getBatteryIcon(device)
                                         size: Theme.iconSize - 4
                                         color: device?.batteryCharging ? Theme.success : Theme.surfaceVariantText
                                         anchors.verticalCenter: parent.verticalCenter
@@ -268,7 +268,7 @@ Rectangle {
                                 buttonSize: 36
                                 tooltipText: I18n.tr("Ring", "KDE Connect ring tooltip")
                                 onClicked: {
-                                    KDEConnectService.ringDevice(modelData, response => {
+                                    PhoneConnectService.ringDevice(modelData, response => {
                                         if (response.error)
                                             return;
                                         ToastService.showInfo(I18n.tr("Ringing", "KDE Connect ring action") + " " + (device?.name || I18n.tr("device", "Generic device name")));
@@ -282,7 +282,7 @@ Rectangle {
                                 buttonSize: 36
                                 tooltipText: I18n.tr("Ping", "KDE Connect ping tooltip")
                                 onClicked: {
-                                    KDEConnectService.sendPing(modelData, "", response => {
+                                    PhoneConnectService.sendPing(modelData, "", response => {
                                         if (response.error)
                                             return;
                                         ToastService.showInfo(I18n.tr("Ping sent", "KDE Connect ping action"));
@@ -296,7 +296,7 @@ Rectangle {
                                 buttonSize: 36
                                 tooltipText: I18n.tr("Send Clipboard", "KDE Connect clipboard tooltip")
                                 onClicked: {
-                                    KDEConnectService.sendClipboard(modelData, response => {
+                                    PhoneConnectService.sendClipboard(modelData, response => {
                                         if (response.error)
                                             return;
                                         ToastService.showInfo(I18n.tr("Clipboard sent", "KDE Connect clipboard action"));
@@ -311,7 +311,7 @@ Rectangle {
                                 tooltipText: I18n.tr("Browse Files", "KDE Connect browse tooltip")
                                 onClicked: {
                                     PopoutService.closeControlCenter();
-                                    KDEConnectService.startBrowsing(modelData, response => {
+                                    PhoneConnectService.startBrowsing(modelData, response => {
                                         if (response.error)
                                             return;
                                         ToastService.showInfo(I18n.tr("Opening files", "KDE Connect browse action") + "...");
@@ -320,13 +320,14 @@ Rectangle {
                             }
 
                             DankActionButton {
+                                visible: PhoneConnectService.supportsSms
                                 iconName: "sms"
                                 iconColor: Theme.primary
                                 buttonSize: 36
                                 tooltipText: I18n.tr("SMS", "KDE Connect SMS tooltip")
                                 onClicked: {
                                     PopoutService.closeControlCenter();
-                                    KDEConnectService.launchSmsApp(modelData, response => {
+                                    PhoneConnectService.launchSmsApp(modelData, response => {
                                         if (response.error)
                                             return;
                                         ToastService.showInfo(I18n.tr("Opening SMS", "KDE Connect SMS action") + "...");
@@ -341,7 +342,7 @@ Rectangle {
                                 buttonSize: 36
                                 tooltipText: I18n.tr("Unpair", "KDE Connect unpair tooltip")
                                 onClicked: {
-                                    KDEConnectService.unpair(modelData, response => {
+                                    PhoneConnectService.unpair(modelData, response => {
                                         if (response.error)
                                             return;
                                         ToastService.showInfo(I18n.tr("Device unpaired", "KDE Connect unpair action"));
@@ -358,7 +359,7 @@ Rectangle {
                                 text: I18n.tr("Accept", "KDE Connect accept pairing button")
                                 iconName: "check"
                                 buttonHeight: 32
-                                onClicked: KDEConnectService.acceptPairing(modelData)
+                                onClicked: PhoneConnectService.acceptPairing(modelData)
                             }
 
                             DankButton {
@@ -367,7 +368,7 @@ Rectangle {
                                 buttonHeight: 32
                                 backgroundColor: Theme.error
                                 textColor: Theme.primaryText
-                                onClicked: KDEConnectService.cancelPairing(modelData)
+                                onClicked: PhoneConnectService.cancelPairing(modelData)
                             }
                         }
 
@@ -379,7 +380,7 @@ Rectangle {
                                 text: I18n.tr("Pair", "KDE Connect pair button")
                                 iconName: "link"
                                 buttonHeight: 32
-                                onClicked: KDEConnectService.requestPairing(modelData)
+                                onClicked: PhoneConnectService.requestPairing(modelData)
                             }
                         }
                     }
